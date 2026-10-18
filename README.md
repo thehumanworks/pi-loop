@@ -125,6 +125,8 @@ npm pack --dry-run
 
 `index.ts` is the Pi integration; `src/scheduler.ts` owns durable scheduling; `src/worker.ts` is the single-writer host process; `src/client.ts` is the socket/startup client. Rebuild and include `dist/` whenever changing worker code. The checked-in generated files also support git installs that disable lifecycle scripts.
 
-Tests use Pi's faux model provider, not paid API calls. They cover interval parsing, scope-preserving command dispatch, confirmations, idempotency, host file tools, isolated runs, pause/resume/delete, SQLite recovery, competing worker processes, and SIGKILL in the middle of a shell tool without replaying its side effect.
+Tests use Pi's faux model provider, not paid API calls. They cover interval parsing, scope-preserving command dispatch, confirmations, idempotency, host file tools, isolated runs, pause/resume/delete, SQLite recovery, socket request/reply lifecycle, competing worker processes, and SIGKILL in the middle of a shell tool without replaying its side effect.
+
+To also test recovery in fresh sessions of an installed Pi executable (including Bun-based standalone builds), run `PI_LOOP_TEST_PI="$(command -v pi)" npm test`. This starts isolated RPC sessions without making model calls or touching existing schedules.
 
 `pi-durable` is experimental, so the worker runtime and durable library are pinned to 1.3.0. `pi-loop-runtime` is an npm alias for the coding-agent runtime used **only in the separate worker process**. The extension itself imports host APIs as peer dependencies; it does not instantiate a second coding-agent runtime inside Pi.

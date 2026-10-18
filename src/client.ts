@@ -16,7 +16,9 @@ export function rpc(request: Request, timeout = 30_000): Promise<unknown> {
     };
     socket.setTimeout(timeout, () => finish(new Error("Loop worker timed out. A submitted operation may still complete; list schedules before retrying.")));
     socket.on("error", reject);
-    socket.on("connect", () => socket.end(JSON.stringify(request) + "\n"));
+    // Newline frames the request; keep both halves open until the reply arrives.
+    // Bun-based Pi executables can close the read side too when socket.end() is used here.
+    socket.on("connect", () => socket.write(JSON.stringify(request) + "\n"));
     socket.on("data", chunk => {
       response += chunk.toString();
       if (Buffer.byteLength(response) > 16 * 1024 * 1024) return finish(new Error("Loop worker response is too large."));
